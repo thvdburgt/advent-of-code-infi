@@ -1,4 +1,4 @@
-# Infi Advent of Code (2017) solutions
+# Infi Advent of Code (2017) solution
 
 The challenge (text in Dutch):
 
