@@ -11,6 +11,5 @@ fn main() {
     );
 
     let input = input.trim();
-    let answer1 = advent::puzzle1(input);
-    println!("the answer is {}", answer1);
+    println!("{} collisions", advent::puzzle(input));
 }

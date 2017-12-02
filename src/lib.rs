@@ -3,90 +3,86 @@ extern crate svg;
 
 use regex::Regex;
 
-use svg::node::element::Path;
-use svg::node::element::path::Data;
 use svg::node::element::Circle;
 
-struct Robot {
-    x: i32,
-    y: i32,
-    data: Data
-}
 #[derive(Debug)]
 struct Movement {
     x: i32,
-    y: i32
+    y: i32,
+}
+#[derive(Debug, Clone)]
+struct Position {
+    x: i32,
+    y: i32,
+}
+#[derive(Debug)]
+struct Robot {
+    position: Position,
 }
 
-pub fn puzzle1(input: &str) -> u32 {
+pub fn puzzle(input: &str) -> u32 {
     // create the regexes used
     let robot_re = Regex::new(r"\[([-+]?\d+),([-+]?\d+)\]").unwrap();
     let movement_re = Regex::new(r"\(([-+]?\d+),([-+]?\d+)\)").unwrap();
 
     // parse the movements
-    let movements: Vec<_> = movement_re.captures_iter(input).map(|cap| {
-        Movement {
-            x: cap[1].parse::<i32>().unwrap(),
-            y: cap[2].parse::<i32>().unwrap()
-        }
-    }).collect();
+    let movements: Vec<_> = movement_re
+        .captures_iter(input)
+        .map(|cap| {
+            Movement {
+                x: cap[1].parse::<i32>().unwrap(),
+                y: cap[2].parse::<i32>().unwrap(),
+            }
+        })
+        .collect();
     // parse the robots
-    let mut robots: Vec<_> = robot_re.captures_iter(input).map(|cap| {
-        let x = cap[1].parse::<i32>().unwrap();
-        let y = cap[2].parse::<i32>().unwrap();
-        Robot {x, y, data: Data::new().move_to((x, y))
-        }
-    }).collect();
+    let mut robots: Vec<_> = robot_re
+        .captures_iter(input)
+        .map(|cap| {
+            let x = cap[1].parse::<i32>().unwrap();
+            let y = cap[2].parse::<i32>().unwrap();
+            Robot { position: Position { x, y } }
+        })
+        .collect();
 
+    // assert the number of movements is a multiple of the number of robots
     assert!((movements.len() / robots.len()) * robots.len() == movements.len());
 
-    
-    // count the collisions
+    // apply the movements to the robots
     let mut collisions = vec![];
     for round_moves in movements.chunks(robots.len()) {
         // update positions
         for (r, m) in robots.iter_mut().zip(round_moves) {
-            r.x += m.x;
-            r.y += m.y;
-            r.data = r.data.clone().line_by((m.x, m.y));
+            r.position.x += m.x;
+            r.position.y += m.y;
         }
 
         // check for collisions
         for (i, r1) in robots.iter().enumerate() {
             for r2 in robots[(i + 1)..].iter() {
-                if r1.x == r2.x && r1.y == r2.y {
-                    collisions.push(Movement{x: r1.x, y: r1.y});
+                if r1.position.x == r2.position.x && r1.position.y == r2.position.y {
+                    collisions.push(r1.position.clone());
                 }
             }
         }
     }
 
-    // create svg
-    let mut document = svg::Document::new()
-        .set("viewBox", (0, 0, 100, 100));
+    // create a SVG with dots on all collision positions
+    let mut document = svg::Document::new();
     for col in &collisions {
         let circle = Circle::new()
             .set("cx", col.x)
             .set("cy", col.y)
-            .set("r", 0.1)
+            .set("r", 0.5)
             .set("fill", "black")
-            .set("stroke", "none")
-            .set("stroke-width", 0.003);
+            .set("stroke", "none");
         document = document.add(circle);
     }
-    // for mut r in robots {
-    //     r.data = r.data.clone().close();
-    //     let path = Path::new()
-    //         .set("fill", "none")
-    //         .set("stroke", "black")
-    //         .set("stroke-width", 0.003)
-    //         .set("d", r.data);
-    //     document = document.add(path);
-    // }
     svg::save("image.svg", &document).unwrap();
 
     collisions.len() as u32
 }
+
 
 #[cfg(test)]
 mod tests {
