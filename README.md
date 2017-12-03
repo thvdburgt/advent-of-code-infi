@@ -1,4 +1,4 @@
-# Infi Advent of Code (2017) solution
+# My [Infi Advent of Code (2017)](https://aoc.infi.nl/) solution
 
 The challenge (text in Dutch):
 
