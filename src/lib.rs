@@ -1,49 +1,30 @@
-extern crate regex;
 extern crate svg;
+#[macro_use]
+extern crate nom;
 
-use regex::Regex;
-
-use svg::node::element::Circle;
+mod parsers;
+use parsers::parse_input;
 
 #[derive(Debug)]
 struct Movement {
     x: i32,
     y: i32,
 }
+
 #[derive(Debug, Clone)]
 struct Position {
     x: i32,
     y: i32,
 }
+
 #[derive(Debug)]
 struct Robot {
     position: Position,
 }
 
 pub fn puzzle(input: &str) -> u32 {
-    // create the regexes used
-    let robot_re = Regex::new(r"\[([-+]?\d+),([-+]?\d+)\]").unwrap();
-    let movement_re = Regex::new(r"\(([-+]?\d+),([-+]?\d+)\)").unwrap();
-
-    // parse the movements
-    let movements: Vec<_> = movement_re
-        .captures_iter(input)
-        .map(|cap| {
-            Movement {
-                x: cap[1].parse::<i32>().unwrap(),
-                y: cap[2].parse::<i32>().unwrap(),
-            }
-        })
-        .collect();
-    // parse the robots
-    let mut robots: Vec<_> = robot_re
-        .captures_iter(input)
-        .map(|cap| {
-            let x = cap[1].parse::<i32>().unwrap();
-            let y = cap[2].parse::<i32>().unwrap();
-            Robot { position: Position { x, y } }
-        })
-        .collect();
+    // parse the robots and movements
+    let (mut robots, movements) = parse_input(input.as_bytes());
 
     // assert the number of movements is a multiple of the number of robots
     assert!((movements.len() / robots.len()) * robots.len() == movements.len());
@@ -70,7 +51,7 @@ pub fn puzzle(input: &str) -> u32 {
     // create a SVG with dots on all collision positions
     let mut document = svg::Document::new();
     for col in &collisions {
-        let circle = Circle::new()
+        let circle = svg::node::element::Circle::new()
             .set("cx", col.x)
             .set("cy", col.y)
             .set("r", 0.5)

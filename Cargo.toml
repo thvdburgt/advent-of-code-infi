@@ -1,8 +1,8 @@
 [package]
 name = "advent-of-code-infi"
-version = "0.1.0"
+version = "0.2.0"
 authors = ["Thomas van der Burgt <thomas@thvdburgt.nl>"]
 
 [dependencies]
-regex = "0.2"
+nom = "3.2.1"
 svg = "0.5.7"
